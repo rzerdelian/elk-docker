@@ -1,0 +1,101 @@
+{
+    "aliases": {},
+    "mappings": {
+      "doc": {
+		"dynamic_templates": [
+		  {
+			"message_field": {
+			  "path_match": "message",
+			  "match_mapping_type": "string",
+			  "mapping": {
+				"type": "text",
+				"norms": false
+			  }
+			}
+		  },
+		  {
+			"string_fields": {
+			  "match": "*",
+			  "match_mapping_type": "string",
+			  "mapping": {
+				"type": "text",
+				"norms": false,
+				"fields": {
+				  "keyword": {
+					"type": "keyword",
+					"ignore_above": 256
+				  }
+				}
+			  }
+			}
+		  }
+		],
+		"properties": {
+          "@timestamp": { "type": "date" },
+          "@version": { "type": "keyword" },
+          "controller": {
+            "properties": {
+              "action": { "type": "keyword" }
+            }
+          },
+          
+          "exception": {
+            "properties": {
+              "type": {
+                "type": "keyword" },
+              "message": {
+                "type": "keyword" }
+            }
+          },
+		  "docker": {
+            "properties": {
+              "imageId": {
+                "type": "keyword" },
+              "imageName": {
+                "type": "keyword" },
+			  "containerId": {
+                "type": "keyword" },
+              "containerName": {
+                "type": "keyword" },
+			  "host": {
+                "type": "keyword" },
+              "sourceHost": {
+                "type": "keyword" },
+			  "command": {
+                "type": "keyword" }
+            }
+          },
+          "host": { "type": "keyword" },
+          "logLevel": { "type": "keyword" },
+          "machineName": {
+            "type": "keyword" },
+          "message": {
+            "type": "text" },
+          "port": {
+            "type": "long" },
+          "processName": {
+            "type": "keyword" },
+          "requestInfo": {
+            "type": "keyword" },
+          "requestUrl": {
+            "type": "keyword" },
+          "site": {
+            "type": "keyword"  },
+          "threadId": {
+            "type": "keyword" },
+          "applicationName": {
+            "type": "keyword"  }
+        }
+      }
+    },
+    "settings": {
+      "index": {
+		"codec": "best_compression",
+        "number_of_shards": "1",
+        "number_of_replicas": "0"
+      }
+    },
+	"index_patterns": [
+      "applog-*"
+    ]
+}

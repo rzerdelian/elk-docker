@@ -1,0 +1,27 @@
+
+heartbeat.monitors:
+- type: http
+  # List or urls to query
+  urls: ["http://elasticsearch:9200", "http://logstash:9600", "http://kibana:5601"]
+  # Configure task schedule
+  schedule: '@every 10s'
+  check.response.status: 200
+
+  # Total test connection and data exchange timeout
+  #timeout: 16s
+  
+output.elasticsearch:
+  hosts: ["http://elasticsearch:9200"]
+  
+setup.dashboards.enabled: true
+setup.kibana:
+  host: "kibana:5601"
+  
+setup.template.settings:
+  index.number_of_shards: 1
+  index.codec: best_compression
+  
+xpack.monitoring:
+  enabled: true
+  #elasticsearch:
+  #  hosts: ["http://elasticsearch:9200"]

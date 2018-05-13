@@ -1,0 +1,84 @@
+{
+    "description": "gelf logs from docker",
+    "processors": [
+      {
+        "grok": {
+          "field": "_source.message",
+          "ignore_missing": true,
+          "trace_match": true,
+          "patterns": [
+            """^\[%{TIMESTAMP_ISO8601:log-timestamp}\]\[%{LOGLEVEL:logLevel}.?]\[%{DATA:processName}(\s*?)\] %{GREEDYDATA:message}"""
+          ]
+        }
+      },
+      {
+        "set": {
+          "field": "pipeline",
+          "value": "docker"
+        }
+      },
+      {
+        "set": {
+          "field": "docker",
+          "value": """{"containerId": "{{_source.container_id}}", "containerName": "{{_source.container_name}}", "imageId": "{{_source.image_id}}", "imageName": "{{_source.image_name}}", "command": "{{_source.command}}", "sourceHost": "{{_source.source_host}}","host": "{{_source.host}}"}"""
+        }
+      },
+      {
+        "set": {
+          "field": "applicationName",
+          "value": "{{_source.container_name}}"
+        }
+      },
+      {
+        "json": {
+          "field": "docker"
+        }
+      },
+      {
+        "remove": {
+          "field": [
+            "tag",
+            "container_id",
+            "container_name",
+            "image_id",
+            "image_name",
+            "command",
+            "level",
+            "source_host",
+            "host"
+          ]
+        }
+      },
+      {
+        "lowercase": {
+          "field": "logLevel"
+        }
+      },
+      {
+        "rename": {
+          "field": "@timestamp",
+          "target_field": "readTime"
+        }
+      },
+      {
+        "rename": {
+          "field": "log-timestamp",
+          "target_field": "@timestamp"
+        }
+      }
+    ],
+    "on_failure": [
+      {
+        "set": {
+          "field": "tags",
+          "value": "docker-parse-error"
+        }
+      },
+      {
+        "set": {
+          "field": "error",
+          "value": "{{ _ingest.on_failure_message }}"
+        }
+      }
+    ]
+  }

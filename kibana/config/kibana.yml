@@ -1,0 +1,5 @@
+
+elasticsearch.url: "http://localhost:9200"
+xpack.security.enabled: false
+xpack.monitoring.ui.container.elasticsearch.enabled: true
+

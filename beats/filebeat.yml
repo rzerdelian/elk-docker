@@ -1,0 +1,25 @@
+filebeat.config.modules:
+  # Glob pattern for configuration loading
+  path: ${path.config}/filebeat.d/*.yml
+
+  # Set to true to enable config reloading
+  reload.enabled: true
+
+  # Period on which files under path should be checked for changes
+  #reload.period: 10s
+  
+output.elasticsearch:
+  hosts: ["http//elasticsearch:9200"]
+  
+setup.dashboards.enabled: true
+setup.kibana:
+  host: "kibana:5601"
+  
+setup.template.settings:
+  index.number_of_shards: 1
+  index.codec: best_compression
+  
+xpack.monitoring:
+  enabled: true
+  elasticsearch:
+    #hosts: ["http://elasticsearh:9200"]

@@ -1,0 +1,110 @@
+version: '3'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.2.3
+    container_name: elasticsearch
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+      - ./ELK-Data:/usr/share/elasticsearch/data:rw
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      ES_JAVA_OPTS: "-Xmx512m -Xms512m"
+    networks:
+      - elk
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://localhost:12201
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:6.2.3
+    container_name: kibana
+    environment:
+      - 'elasticsearch.url: "http://elasticsearch:9200"'
+      - 'xpack.security.enabled: false'
+    ports:
+      - "5601:5601"
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+    #logging:
+    #  driver: gelf
+    #  options:
+    #    gelf-address: udp://localhost:12201
+  
+  logstash:
+    image: docker.elastic.co/logstash/logstash:6.2.3
+    container_name: logstash
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./logstash/pipeline/:/usr/share/logstash/pipeline/:ro
+      - ./logstash/logs/:/usr/share/logstash/logs/:rw
+    ports:
+      - "5000:5000"
+      #- "9000:9000"
+      - "9600:9600"
+      - "5044:5044"
+      - "12201:12201/udp"
+    #environment:
+     #  - 'LS_JAVA_OPTS: "-Xmx256m -Xms256m"'
+     #  #- 'config.reload.automatic: true'
+     #  - 'LS_OPTS="-r"'
+     #  - 'config.reload.interval: 10s'
+     #  - 'xpack.security.enabled: false'
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://localhost:12201
+      
+  #metricbeat:
+  #  image: docker.elastic.co/beats/metricbeat:6.2.3
+  #  container_name: metricbeat
+  #  volumes:
+  #    - ./beats/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro
+  #  networks:
+  #    - elk
+  #  depends_on:
+  #    - logstash
+
+  heartbeat:
+    image: docker.elastic.co/beats/heartbeat:6.2.3
+    container_name: heartbeat
+    volumes:
+      - ./beats/heartbeat.yml:/usr/share/heartbeat/heartbeat.yml:ro
+    networks: 
+      - elk
+    depends_on: 
+      - elasticsearch  
+      - logstash
+      - kibana
+    #ports:
+    #  - "5044:5044"    
+
+  #filebeat:
+  #  image: docker.elastic.co/beats/filebeat:6.2.3
+  #  container_name: filebeat
+  #  networks: 
+  #    - elk
+  #  depends_on:
+  #    - elasticsearch
+    #logging:
+    #  driver: gelf
+    #  options:
+    #    gelf-address: udp://localhost:12201
+      
+networks:
+  elk:
+    driver: bridge
+
+#https://github.com/deviantony/docker-elk/blob/master/docker-compose.yml
+
+#docker network for sharing - run in powershell
+#   Set-NetConnectionProfile -InterfaceAlias "vEthernet (DockerNAT)" -NetworkCategory Private
+#   Get-NetConnectionProfile -InterfaceAlias "vEthernet (DockerNAT)"
